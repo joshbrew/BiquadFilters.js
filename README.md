@@ -10,7 +10,7 @@ Features:
 * High shelf
 * Low shelf
 
-Set Q-factor and other parameters as needed, you will want to experiment a bit for the notch, peak, and bandpass filters, the defaults otherwise are butterworth (1/root(2)) Q factors while I set relatively effective values for the aforementioned special cases.
+Set Q-factor and other parameters as needed, you will want to experiment a bit for the notch, peak, and bandpass filters, the defaults otherwise are butterworth (1/root(2)) Q factors while I set relatively effective values for the aforementioned special cases. dbGain only applies to the shelf filters, which provide amplification above or below the set frequency.
 
 Functions:
 
