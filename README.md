@@ -23,8 +23,8 @@ types: 'lowpass','highpass','bandpass','notch','peak','lowshelf','highshelf'
 
 `class DCBlocker(r)` Create a DC blocking filter which better highlights oscillations
 
-`makeNotchFilter(frequency,sps,bandwidth)` Macro to generate a notch filter with the correct Q factor for the specified bandwidth.
+`makeNotchFilter(frequency,sps,bandwidth)` Macro to generate a notch filter with the correct Q factor for the specified bandwidth. Returns a Biquad class instance.
 
-`makeBandpassFilter(freqStart,freqEnd,sps,resonance)` Macro to generate a bandpass filter. Applying 4 seems to work well to get a full noise cancellation, though for some reason the output gets scaled by 1/n filters so you just need to multiply by how many filters you used to restore the amplitudes to the right values.
+`makeBandpassFilter(freqStart,freqEnd,sps,resonance)` Macro to generate a bandpass filter. Applying 4 seems to work well to get a full noise cancellation, though for some reason the output gets scaled by 1/n filters so you just need to multiply by how many filters you used to restore the amplitudes to the right values. Returns a Biquad class instance.
 
 ![capture](Capture.PNG)
