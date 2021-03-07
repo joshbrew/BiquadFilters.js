@@ -21,10 +21,10 @@ types: 'lowpass','highpass','bandpass','notch','peak','lowshelf','highshelf'
 
 `classinstance.zResult(freq)` Returns the z-transfer function values (i.e. how much each frequency amplitude gets multiplied/reduced by the filter)
 
-`class DCBlocker(r)` Create a DC blocking filter which better highlights oscillations
+`class DCBlocker(r)` Create a DC blocking filter which better highlights oscillations. Default r = 0.995
 
 `makeNotchFilter(frequency,sps,bandwidth)` Macro to generate a notch filter with the correct Q factor for the specified bandwidth. Returns a Biquad class instance.
 
-`makeBandpassFilter(freqStart,freqEnd,sps,resonance)` Macro to generate a bandpass filter. Applying 4 seems to work well to get a full noise cancellation, though for some reason the output gets scaled by 1/n filters so you just need to multiply by how many filters you used to restore the amplitudes to the right values. Returns a Biquad class instance.
+`makeBandpassFilter(freqStart,freqEnd,sps,resonance)` Macro to generate a bandpass filter. The resonance value has a default setting that works pretty well, but I recommend experimenting. Having the resonance value being around 10^floor(log10(center frequency)) works well at least at low frequencies, I used 9.75 for a 3-45Hz bandpass filter for example. Applying 4 seems to work well to get a full noise cancellation, though for some reason the output gets scaled by 1/n filters so you just need to multiply by how many filters you used to restore the amplitudes to the right values. Returns a Biquad class instance.
 
 ![capture](Capture.PNG)
