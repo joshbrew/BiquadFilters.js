@@ -1,5 +1,5 @@
 # Biquadjs
-A simple javascript adaptation of a set of useful Biquad filters from an obscure arachnoid.com python tutorial. See the example html for usage. I combed the internet for this and I use these for EEG signal filtering.
+A simple javascript adaptation of a set of useful Biquad filters from an obscure arachnoid.com python tutorial. See the example html for usage. I combed the internet for this and I use these for EEG signal filtering. These will work in nodejs with imports, or just paste it into your html page and delete the exports.
 
 Features:
 * Low pass
