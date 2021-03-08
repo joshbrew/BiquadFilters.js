@@ -14,14 +14,14 @@ Set Q-factor and other parameters as needed, you will want to experiment a bit f
 
 Functions:
 
-`class Biquad(type,freq,sps,Q,dbGain)` Create a new filter, these keep the latest sample and filter values so make a new one for each additional filter.
+`let classinstance = new class Biquad(type,freq,sps,Q,dbGain)` Create a new filter, these keep the latest sample and filter values so make a new one for each additional filter.
 types: 'lowpass','highpass','bandpass','notch','peak','lowshelf','highshelf'
 
-`classinstance.applyFilter(signal_step)` Apply the filter to the next sample in the sequence. 
+`let output =  classinstance.applyFilter(signal_step)` Apply the filter to the next sample in the sequence. Returns the filtered amplitude.
 
-`classinstance.zResult(freq)` Returns the z-transfer function values (i.e. how much each frequency amplitude gets multiplied/reduced by the filter)
+`let z = classinstance.zResult(freq)` Returns the z-transfer function values (i.e. how much each frequency amplitude gets multiplied/reduced by the filter)
 
-`class DCBlocker(r)` Create a DC blocking filter which better highlights oscillations. Default r = 0.995
+`let dcblocker = new class DCBlocker(r)` Create a DC blocking filter which better highlights oscillations. Default r = 0.995. Use `output = dcblocker.applyFilter(y)` for each signal step.
 
 `makeNotchFilter(frequency,sps,bandwidth)` Macro to generate a notch filter with the correct Q factor for the specified bandwidth. Returns a Biquad class instance.
 
