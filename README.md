@@ -14,7 +14,7 @@ Set Q-factor and other parameters as needed, you will want to experiment a bit f
 
 Functions:
 
-`let classinstance = new class Biquad(type,freq,sps,Q,dbGain)` Create a new filter, these keep the latest sample and filter values so make a new one for each additional filter.
+`let classinstance = new Biquad(type,freq,sps,Q,dbGain)` Create a new filter, these keep the latest sample and filter values so make a new one for each additional filter.
 types: 'lowpass','highpass','bandpass','notch','peak','lowshelf','highshelf'. Set the frequency and sample rate, with default butterworth Q values. dBGain only applies to the shelf filters. See below for notch and bandpass filter macros. I should add a peak filter macro..
 
 `let output =  classinstance.applyFilter(signal_step)` Apply the filter to the next sample in the sequence. Returns the filtered amplitude.
