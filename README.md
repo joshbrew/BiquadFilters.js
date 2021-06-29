@@ -12,10 +12,16 @@ Features:
 
 Set Q-factor and other parameters as needed, you will want to experiment a bit for the notch, peak, and bandpass filters, the defaults otherwise are butterworth (1/root(2)) Q factors while I set relatively effective values for the aforementioned special cases. dbGain only applies to the shelf filters, which provide amplification above or below the set frequency.
 
-There is a ready-made macro, preset for getting biosignal data like EEG and ECG: `class BiquadChannelFilterer(channel="tag",sps=512, filtering=true, scalingFactor=1)` 
+There is a ready-made macro, preset for getting biosignal data like EEG and ECG: 
+```
+//class BiquadChannelFilterer(channel="tag",sps=512, filtering=true, scalingFactor=1)
+let filterer = new BiquadChannelFilterer('A1',512,true,1);
+let result = filterer.apply(signal_step);
+``` 
 * Scaling factor just applies a scalar e.g. ADC -> Voltage conversion.
 * Filtering toggles whether the filter is applied when looping over it in a bigger program
 * Samplerate is fixed, calculate correctly or it won't work very well. You can start/stop streams just fine and the filters will correct otherwise.
+* Returns the result with filterer.apply(signal_step), where the signal step is the latest amplitude in a time domain sequence (which can be real time, see https://app.brainsatplay.com)
 
 
 Functions:

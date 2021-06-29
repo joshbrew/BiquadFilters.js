@@ -1,0 +1,27 @@
+{
+  "name": "biquadjs",
+  "description": "Create arbitrary biquad filters to apply to signals. Created for real time biosensing, works in most general cases.",
+  "version": "0.0.1",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moothyknight/BiquadFilters.js.git"
+  },
+  "keywords": [
+    "Biquad",
+    "Filters",
+    "IIR",
+    "Infinite Impulse Response",
+    "Signal",
+    "Processing"
+  ],
+  "author": "Joshua Brewster <brewster.joshua1@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/moothyknight/BiquadFilters.js/issues"
+  },
+  "homepage": "https://github.com/moothyknight/BiquadFilters.js",
+  "main": "UI_Utils.js"
+}
