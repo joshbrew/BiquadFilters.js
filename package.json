@@ -1,7 +1,8 @@
 {
   "name": "biquadjs",
   "description": "Create arbitrary biquad filters to apply to signals. Created for real time biosensing, works in most general cases.",
-  "version": "0.0.1",
+  "main": "BiquadFilters.js",
+  "version": "0.0.2",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,6 +23,5 @@
   "bugs": {
     "url": "https://github.com/moothyknight/BiquadFilters.js/issues"
   },
-  "homepage": "https://github.com/moothyknight/BiquadFilters.js",
-  "main": "UI_Utils.js"
+  "homepage": "https://github.com/moothyknight/BiquadFilters.js"
 }
