@@ -44,14 +44,14 @@ export class BiquadChannelFilterer {
     options:FilterSettings={
       sps:512, //important to be precise!!
       useSMA4:false,
-      useNotch50:true,
-      useNotch60:true,
+      useNotch50:false,
+      useNotch60:false,
       useLowpass: false,
       lowpassHz:100,
       useBandpass: false,
       bandpassLower:3,
       bandpassUpper:45,
-      useDCBlock: true,
+      useDCBlock: false,
       DCBresonance:0.995,
       trimOutliers:false,
       outlierTolerance:0.20,

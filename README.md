@@ -15,12 +15,48 @@ Features:
 
 Set Q-factor and other parameters as needed, you will want to experiment a bit for the notch, peak, and bandpass filters, the defaults otherwise are butterworth (1/root(2)) Q factors while I set relatively effective values for the aforementioned special cases. dbGain only applies to the shelf filters, which provide amplification above or below the set frequency.
 
-There is a ready-made macro, preset for getting biosignal data like EEG and ECG: 
+Main class: Biquad
+```js
+
+let lowpass = new Biquad('lowpass',20,512); //20Hz lowpass at 512Hz. 
+//let notch = makeNotchFilter(...) //macros
+//let bandpass = makeBandpassFilter(...) //macros
 ```
-//class BiquadChannelFilterer(channel="tag",sps=512, filtering=true, scalingFactor=1)
-let filterer = new BiquadChannelFilterer('A1',512,true,1);
+
+Secondary class: BiquadChannelFilterer - bundles biquad presets in a configurable way for easy device stream transforming.
+
+There is a ready-made macro to use a list of filters, preset for getting biosignal data like EEG and ECG by applying notch and bandpass etc.
+```js
+let filterer = new BiquadChannelFilterer({
+    sps:512,
+    useBandpass:true,
+    bandpassLower:3, //hz
+    bandpassUpper:45 //hz
+});
 let result = filterer.apply(signal_step);
 ``` 
+
+All settings:
+```ts
+export type FilterSettings = {
+  sps:number, //required
+  useSMA4?:boolean,
+  useNotch50?:boolean,
+  useNotch60?:boolean,
+  useLowpass?: boolean,
+  lowpassHz?:number,
+  useBandpass?: boolean,
+  bandpassLower?:number,
+  bandpassUpper?:number,
+  useDCBlock?: boolean,
+  DCBresonance?: number,
+  useScaling?: boolean,
+  scalar?:number,
+  trimOutliers?:boolean,
+  outlierTolerance?:number //absolute value, should do a relative one but scaling causes problems
+}
+```
+
 * Scaling factor just applies a scalar e.g. ADC -> Voltage conversion.
 * Filtering toggles whether the filter is applied when looping over it in a bigger program
 * Samplerate is fixed, calculate correctly or it won't work very well. You can start/stop streams just fine and the filters will correct otherwise.
