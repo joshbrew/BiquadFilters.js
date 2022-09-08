@@ -2,7 +2,7 @@
   "name": "biquadjs",
   "description": "Create arbitrary biquad filters to apply to signals. Created for real time biosensing, works in most general cases.",
   "main": "BiquadFilters.js",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

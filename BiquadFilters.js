@@ -1,19 +1,89 @@
 //https://arachnoid.com/phase_locked_loop/resources/biquad_module.py
 //Translated to JS by Josh Brewster (MIT License), added BiquadChannelFilterer macros.
 
-//Macro for running multiple filter passes over a signal. 
+// export type FilterSettings = {
+//   sps:number, //required
+//   useSMA4?:boolean,
+//   useNotch50?:boolean,
+//   useNotch60?:boolean,
+//   useLowpass?: boolean,
+//   lowpassHz?:number,
+//   useBandpass?: boolean,
+//   bandpassLower?:number,
+//   bandpassUpper?:number,
+//   useDCBlock?: boolean,
+//   DCBresonance?: number,
+//   useScaling?: boolean,
+//   scalar?:number,
+//   trimOutliers?:boolean,
+//   outlierTolerance?:number
+// }
+
+// //Macro for running multiple filter passes over a signal. 
 export class BiquadChannelFilterer {
-  constructor(channel="A0",sps=512, filtering=true, scalingFactor=1) {
-    this.channel=channel; this.idx = 0; this.sps = sps;
-    this.filtering=filtering;
-    this.bplower = 3; this.bpupper = 45;
-    this.scalingFactor = scalingFactor;
 
-    this.useSMA4 = false; this.last4=[];
-    this.useNotch50 = true; this.useNotch60 = true;
-    this.useLp1 = false; this.useBp1 = false;
-    this.useDCB = true; this.useScaling = false;
+  idx//:number; 
+  sps//:number; 
+  bandpassLower//?:number; 
+  bandpassUpper//?:number; 
+  useSMA4//?:boolean; 
+  last4//?:number[]; 
+  filtered//:number; //last sample
+  trimOutliers//?:boolean;
+  outlierTolerance//?:number;
+  useNotch50//?:boolean; 
+  useNotch60//?:boolean;
+  useLowpass//?:boolean; 
+  lowpassHz//?:number;
+  useBandpass//?:boolean; 
+  useDCBlock//?:boolean; 
+  DCBresonance//?:number;
+  useScaling//?:boolean; 
+  scalar//?:number; 
+  notch50//?:any; 
+  notch60//?:any; 
+  lp1//?:any; 
+  bp1//?:any; 
+  dcb//?:any;
 
+  constructor(
+    options={
+      sps:512, //important to be precise!!
+      useSMA4:false,
+      useNotch50:true,
+      useNotch60:true,
+      useLowpass: false,
+      lowpassHz:100,
+      useBandpass: false,
+      bandpassLower:3,
+      bandpassUpper:45,
+      useDCBlock: true,
+      DCBresonance:0.995,
+      trimOutliers:false,
+      outlierTolerance:0.20,
+      useScaling: false,
+      scalar:1,
+    }
+  ) {
+    this.idx = 0; 
+    this.sps = options.sps;
+    this.bandpassLower = options.bandpassLower ? options.bandpassLower : 3; 
+    this.bandpassUpper = options.bandpassUpper ? options.bandpassUpper : 45;
+
+    this.useSMA4 = options.useSMA4; this.last4=[];
+    this.useNotch50 = options.useNotch50; 
+    this.useNotch60 = options.useNotch60;
+    this.useLowpass = options.useLowpass; 
+    this.lowpassHz = options.lowpassHz ? options.lowpassHz : 100;
+    this.useBandpass = options.useBandpass;
+    this.useDCBlock = options.useDCBlock;
+    this.DCBresonance = options.DCBresonance ? options.DCBresonance : 0.995;
+    this.useScaling = options.useScaling;
+    this.scalar = options.scalar;
+    this.trimOutliers = options.trimOutliers;
+    this.outlierTolerance = options.outlierTolerance;
+
+    let sps = this.sps;
     this.notch50 = [
                 makeNotchFilter(50,sps,2),
                 makeNotchFilter(100,sps,2)
@@ -23,91 +93,105 @@ export class BiquadChannelFilterer {
                 makeNotchFilter(120,sps,2)
             ];
     this.lp1 = [
-                new Biquad('lowpass', 50, sps),
-                new Biquad('lowpass', 50, sps),
-                new Biquad('lowpass', 50, sps),
-                new Biquad('lowpass', 50, sps)
+                new Biquad('lowpass', this.lowpassHz, sps),
+                new Biquad('lowpass', this.lowpassHz, sps),
+                new Biquad('lowpass', this.lowpassHz, sps),
+                new Biquad('lowpass', this.lowpassHz, sps)
             ];
     this.bp1 = [
-                makeBandpassFilter(this.bplower,this.bpupper,sps,1),
-                makeBandpassFilter(this.bplower,this.bpupper,sps,1),
-                makeBandpassFilter(this.bplower,this.bpupper,sps,1),
-                makeBandpassFilter(this.bplower,this.bpupper,sps,1)
+                makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1),
+                makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1),
+                makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1),
+                makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1)
             ];
-    this.dcb = new DCBlocker(0.995);
+    this.dcb = new DCBlocker(options.DCBresonance ? options.DCBresonance : 0.995);
   }
 
   reset(sps=this.sps) {
-      this.notch50 = makeNotchFilter(50,sps,1);
-      this.notch60 = makeNotchFilter(60,sps,1);
+    this.notch50 = [
+                makeNotchFilter(50,sps,2),
+                makeNotchFilter(100,sps,2)
+            ];
+    this.notch60 = [
+                makeNotchFilter(60,sps,2),
+                makeNotchFilter(120,sps,2)
+            ];
       this.lp1 = [
-                  new Biquad('lowpass', 50, sps),
-                  new Biquad('lowpass', 50, sps),
-                  new Biquad('lowpass', 50, sps),
-                  new Biquad('lowpass', 50, sps)
+                  new Biquad('lowpass', this.lowpassHz, sps),
+                  new Biquad('lowpass', this.lowpassHz, sps),
+                  new Biquad('lowpass', this.lowpassHz, sps),
+                  new Biquad('lowpass', this.lowpassHz, sps)
               ];
-  this.bp1 = [
-        makeBandpassFilter(this.bplower,this.bpupper,sps,1),
-        makeBandpassFilter(this.bplower,this.bpupper,sps,1),
-        makeBandpassFilter(this.bplower,this.bpupper,sps,1),
-        makeBandpassFilter(this.bplower,this.bpupper,sps,1)
-      ];
-      this.dcb = new DCBlocker(0.995);
-  }
-
-  setBandpass(bplower=this.bplower,bpupper=this.bpupper,sps=this.sps) {
-      this.bplower=bplower; this.bpupper = bpupper;
       this.bp1 = [
-          makeBandpassFilter(bplower,bpupper,sps),
-          makeBandpassFilter(bplower,bpupper,sps),
-          makeBandpassFilter(bplower,bpupper,sps),
-          makeBandpassFilter(bplower,bpupper,sps)
+        makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1),
+        makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1),
+        makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1),
+        makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1)
+      ];
+      this.dcb = new DCBlocker(this.DCBresonance);
+  }
+
+  setBandpass(bandpassLower=this.bandpassLower,bandpassUpper=this.bandpassUpper,sps=this.sps) {
+      this.bandpassLower=bandpassLower; this.bandpassUpper = bandpassUpper;
+      this.bp1 = [
+          makeBandpassFilter(bandpassLower,bandpassUpper,sps),
+          makeBandpassFilter(bandpassLower,bandpassUpper,sps),
+          makeBandpassFilter(bandpassLower,bandpassUpper,sps),
+          makeBandpassFilter(bandpassLower,bandpassUpper,sps)
       ];
   }
 
-  apply(latestData=0, idx=this.lastidx+1) {
+  apply(
+    latestData=0
+  ) {
       let out=latestData; 
-      if(this.filtering === true) {
-    if(this.useDCB === true) { //Apply a DC blocking filter
-              out = this.dcb.applyFilter(out);
-          }
-          if(this.useSMA4 === true) { // 4 sample simple moving average (i.e. low pass)
-              if(idx < 4) {
-              this.last4.push(out);
-            }
-            else {
-              out = this.last4.reduce((accumulator, currentValue) => accumulator + currentValue)/this.last4.length;
-              this.last4.shift();
-              this.last4.push(out);
-            }
-          }
-        
-          if(this.useNotch50 === true) { //Apply a 50hz notch filter
-              this.notch50.forEach((f,i) => {
-                  out = f.applyFilter(out);
-              });
-          }
-          if(this.useNotch60 === true) { //Apply a 60hz notch filter
-              this.notch60.forEach((f,i) => {
-                  out = f.applyFilter(out);
-              });
-          } 
-          if(this.useLp1 === true) { //Apply 4 50Hz lowpass filters
-              this.lp1.forEach((f,i) => {
-                  out = f.applyFilter(out);
-              });
-          }
-          if(this.useBp1 === true) { //Apply 4 Bandpass filters
-              this.bp1.forEach((f,i) => {
-                  out = f.applyFilter(out);
-              });
-              out *= this.bp1.length;
-          }
-          if(this.useScaling === true){
-              out *= this.scalingFactor;
-          }
+      if(this.useScaling === true){
+          out *= this.scalar;
       }
-      this.lastidx=idx;
+      if(this.filtered && this.trimOutliers && this.outlierTolerance) {
+        if(Math.abs(out - this.filtered) > this.outlierTolerance) {
+          out = this.filtered; 
+        }
+      }
+      if(this.useDCBlock === true) { //Apply a DC blocking filter
+          out = this.dcb.applyFilter(out);
+      }
+      if(this.useSMA4 === true) { // 4 sample simple moving average (i.e. low pass)
+        if(!this.last4) this.last4 = [];
+
+        if(this.last4.length < 4) {
+          this.last4.push(out);
+        }
+        else {
+          out = this.last4.reduce((accumulator, currentValue) => accumulator + currentValue)/this.last4.length;
+          this.last4.shift();
+          this.last4.push(out);
+        }
+      }
+    
+      if(this.useNotch50 === true) { //Apply a 50hz notch filter
+          this.notch50.forEach((f,i) => {
+              out = f.applyFilter(out);
+          });
+      }
+      if(this.useNotch60 === true) { //Apply a 60hz notch filter
+          this.notch60.forEach((f,i) => {
+              out = f.applyFilter(out);
+          });
+      } 
+      if(this.useLowpass === true) { //Apply 4 50Hz lowpass filters
+          this.lp1.forEach((f,i) => {
+              out = f.applyFilter(out);
+          });
+      }
+      if(this.useBandpass === true) { //Apply 4 Bandpass filters
+          this.bp1.forEach((f,i) => {
+              out = f.applyFilter(out);
+          });
+          out *= this.bp1.length;
+      }
+      this.filtered = out;
+      this.idx++;
       //console.log(this.channel, out)
       return out;
   }
@@ -116,11 +200,35 @@ export class BiquadChannelFilterer {
 
 
 export class Biquad {
-  constructor(type,freq,sps,Q=1/Math.sqrt(2),dbGain=0) {
+
+  type;
+
+  freq;
+  sps;
+  Q;
+  dbGain;
+
+  a0 = 0;a1 = 0;a2 = 0;
+  b0 = 0;b1 = 0;b2 = 0;
+
+  x1 = 0;
+  x2 = 0;
+  y1 = 0;
+  y2 = 0;
+
+
+
+  constructor(
+    type,//:'lowpass'|'highpass'|'bandpass'|'notch'|'peak'|'lowshelf'|'highshelf',
+    freq,//:number,
+    sps,//:number,
+    Q=1/Math.sqrt(2),
+    dbGain=0
+  ) {
     let types = ['lowpass','highpass','bandpass','notch','peak','lowshelf','highshelf'];
     if(types.indexOf(type) < 0) { 
       console.error("Valid types: 'lowpass','highpass','bandpass','notch','peak','lowshelf','highshelf'"); 
-      return false; 
+      return; 
     }
     this.type = type;
 
@@ -128,12 +236,6 @@ export class Biquad {
     this.sps = sps;
     this.Q = Q;
     this.dbGain = dbGain;
-
-    this.a0 = 0,this.a1 = 0,this.a2 = 0,
-    this.b0 = 0,this.b1 = 0,this.b2 = 0;
-
-    this.x1 = 0,this.x2 = 0,
-    this.y1 = 0,this.y2 = 0;
 
     let A = Math.pow(10,dbGain/40);
     let omega = 2*Math.PI*freq/sps;
@@ -261,6 +363,13 @@ export class Biquad {
 }
 
 export class DCBlocker {
+
+  r; //:number;
+  x1;//:number;
+  x2;//:number;
+  y1;//:number;
+  y2;//:number;
+
   constructor(r=0.995) {
     this.r = r;
     this.y1=this.y2=this.x1=this.x2=0;
