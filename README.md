@@ -45,6 +45,8 @@ export type FilterSettings = {
   useNotch60?:boolean,
   useLowpass?: boolean,
   lowpassHz?:number,
+  useHighpass?:boolean,
+  highpassHz?:number,
   useBandpass?: boolean,
   bandpassLower?:number,
   bandpassUpper?:number,
@@ -52,8 +54,9 @@ export type FilterSettings = {
   DCBresonance?: number,
   useScaling?: boolean,
   scalar?:number,
+  offset?:number, //+=
   trimOutliers?:boolean,
-  outlierTolerance?:number //absolute value, should do a relative one but scaling causes problems
+  outlierTolerance?:number
 }
 ```
 

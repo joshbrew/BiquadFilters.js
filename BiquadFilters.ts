@@ -8,6 +8,8 @@ export type FilterSettings = {
   useNotch60?:boolean,
   useLowpass?: boolean,
   lowpassHz?:number,
+  useHighpass?:boolean,
+  highpassHz?:number,
   useBandpass?: boolean,
   bandpassLower?:number,
   bandpassUpper?:number,
@@ -15,13 +17,13 @@ export type FilterSettings = {
   DCBresonance?: number,
   useScaling?: boolean,
   scalar?:number,
+  offset?:number,
   trimOutliers?:boolean,
   outlierTolerance?:number
 }
 
 //Macro for running multiple filter passes over a signal. 
 export class BiquadChannelFilterer {
-
   idx:number; 
   sps:number; 
   bandpassLower?:number; bandpassUpper?:number; 
@@ -34,11 +36,14 @@ export class BiquadChannelFilterer {
   useNotch60?:boolean;
   useLowpass?:boolean; 
   lowpassHz?:number;
+  useHighpass?:boolean;
+  highpassHz?:number;
   useBandpass?:boolean; 
   useDCBlock?:boolean; 
   DCBresonance?:number;
   useScaling?:boolean; 
-  scalar?:number; notch50?:any; notch60?:any; lp1?:any; bp1?:any; dcb?:any;
+  offset?:number;
+  scalar?:number; notch50?:any; notch60?:any; lp1?:any; bp1?:any; dcb?:any; hp1?:any;
 
   constructor(
     options:FilterSettings={
@@ -48,6 +53,8 @@ export class BiquadChannelFilterer {
       useNotch60:false,
       useLowpass: false,
       lowpassHz:100,
+      useHighpass:false,
+      highpassHz:3,
       useBandpass: false,
       bandpassLower:3,
       bandpassUpper:45,
@@ -69,6 +76,8 @@ export class BiquadChannelFilterer {
     this.useNotch60 = options.useNotch60;
     this.useLowpass = options.useLowpass; 
     this.lowpassHz = options.lowpassHz ? options.lowpassHz : 100;
+    this.useHighpass = options.useHighpass;
+    this.highpassHz = options.highpassHz ? options.highpassHz : 3;
     this.useBandpass = options.useBandpass;
     this.useDCBlock = options.useDCBlock;
     this.DCBresonance = options.DCBresonance ? options.DCBresonance : 0.995;
@@ -76,6 +85,7 @@ export class BiquadChannelFilterer {
     this.scalar = options.scalar;
     this.trimOutliers = options.trimOutliers;
     this.outlierTolerance = options.outlierTolerance;
+    this.offset = options.offset;
 
     let sps = this.sps;
     this.notch50 = [
@@ -92,6 +102,12 @@ export class BiquadChannelFilterer {
                 new Biquad('lowpass', this.lowpassHz, sps),
                 new Biquad('lowpass', this.lowpassHz, sps)
             ];
+
+    this.hp1 = [
+              new Biquad('highpass', this.highpassHz, sps),
+            ];
+
+
     this.bp1 = [
                 makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1),
                 makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1),
@@ -116,6 +132,13 @@ export class BiquadChannelFilterer {
                   new Biquad('lowpass', this.lowpassHz as number, sps),
                   new Biquad('lowpass', this.lowpassHz as number, sps)
               ];
+      this.hp1 = [
+                new Biquad('highpass', this.highpassHz as number, sps),
+                new Biquad('highpass', this.highpassHz as number, sps),
+                new Biquad('highpass', this.highpassHz as number, sps),
+                new Biquad('highpass', this.highpassHz as number, sps)     
+              ];
+          
       this.bp1 = [
         makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1),
         makeBandpassFilter(this.bandpassLower,this.bandpassUpper,sps,1),
@@ -178,13 +201,19 @@ export class BiquadChannelFilterer {
               out = f.applyFilter(out);
           });
       }
+      if(this.useHighpass === true) { //Apply 4 50Hz lowpass filters
+          this.hp1.forEach((f,i) => {
+              out = f.applyFilter(out);
+          });
+      }
       if(this.useBandpass === true) { //Apply 4 Bandpass filters
           this.bp1.forEach((f,i) => {
               out = f.applyFilter(out);
           });
-          out *= this.bp1.length;
+          //out *= this.bp1.length;
       }
       this.filtered = out;
+      if(this.offset) out += this.offset;
       this.idx++;
       //console.log(this.channel, out)
       return out;
